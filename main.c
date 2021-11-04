@@ -12,6 +12,7 @@ void *allocs[MAX_ALLOCATIONS] = { (void*) 0x1};
 
 #define chunk_size(c) ((*((unsigned int *)c)) & ~(unsigned long)7)
 
+
 int timediff()
 {
     static struct timeval before;
@@ -102,21 +103,23 @@ int main(int argc, char **argv)
     printf("Heap before first round of allocations: %zu, free %d, inuse %d\n", mem_heapsize(), free_chunks(), inuse_chunks());
 
     /* the most basic allocation and clearing pointer exercise. This only checks for following the root set pointers one level. */
+	
     for (int i = 0; i < MAX_ALLOCATIONS; i++)
     {
         allocs[i] = mm_malloc(i + 1);
     }
-    
+	
     printf("Heap after first round of allocations: %zu, free %d, inuse %d\n", mem_heapsize(), free_chunks(), inuse_chunks());
     gc();
     printf("Heap after gc, before wiping out allocs array: %zu, free %d, inuse %d\n", mem_heapsize(), free_chunks(), inuse_chunks());
-
-
+	
+	
     for (int i = 0; i < MAX_ALLOCATIONS; i++)
         allocs[i] = 0;
     gc();
     printf("Heap after wiping out allocs array and then gc(): %zu, free %d, inuse %d\n", mem_heapsize(), free_chunks(), inuse_chunks());
-    /* allocations which all point to each other. this checks for proper traversal of the chunk graph. */
+
+	/* allocations which all point to each other. this checks for proper traversal of the chunk graph. */
     for (int i = 0; i < MAX_ALLOCATIONS; i++)
     {
         allocs[i] = mm_malloc(i + 1);
@@ -147,8 +150,8 @@ int main(int argc, char **argv)
             int offset_into_new_alloc = 8 * random_up_to((i * 2 + 120) / 8);
             int offset_into_old_alloc = 8 * random_up_to(((i - 1) * 2 + 120) / 8);
             void **location_of_pointer = (void **)(start_of_new_alloc + offset_into_new_alloc);
-
-            *location_of_pointer = start_of_prev_alloc + offset_into_old_alloc;
+            
+			*location_of_pointer = start_of_prev_alloc + offset_into_old_alloc;
         }
     }
     printf("Heap after third round of allocations: %zu, free %d, inuse %d\n", mem_heapsize(), free_chunks(), inuse_chunks());

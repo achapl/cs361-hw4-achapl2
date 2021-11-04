@@ -111,7 +111,12 @@ void *mm_malloc(size_t size)
     if (size <= DSIZE)     //line:vm:mm:sizeadjust1
         asize = 2 * DSIZE; //line:vm:mm:sizeadjust2
     else
+		// A*(B/A) = floorToNearestMultiple(B,A)
+		// floorToNearestMultiple(size + header + footer + (DSize-1), DSize) == ceilToNearestMultiple(size+header+footer, DSize)
         asize = DSIZE * ((size + (DSIZE) + (DSIZE - 1)) / DSIZE); //line:vm:mm:sizeadjust3
+			// = CeilToMultiple(size + DSIZE, DSIZE);
+			// Minum 'asize' is CeilToMultiple(1 + DSIZE, DSIZE) = DSIZE + DSIZE = 2 DSIZE
+			// So 1 DSIZE for header/footer, 1 DSIZE for payload
 
     /* Search the free list for a fit */
     if ((bp = find_fit(asize)) != NULL)
@@ -223,7 +228,6 @@ void *mm_realloc(void *ptr, size_t size)
     {
         return mm_malloc(size);
     }
-
     newptr = mm_malloc(size);
 
     /* If realloc() fails the original block is left untouched  */
@@ -266,7 +270,7 @@ static void *extend_heap(size_t words)
 
     /* Allocate an even number of words to maintain alignment */
     size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE; //line:vm:mm:beginextend
-    if ((long)(bp = mem_sbrk(size)) == -1)
+	if ((long)(bp = mem_sbrk(size)) == -1)
         return NULL; //line:vm:mm:endextend
 
     /* Initialize free block header/footer and the epilogue header */

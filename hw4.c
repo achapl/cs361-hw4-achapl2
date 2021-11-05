@@ -132,48 +132,29 @@ void * is_pointer(void * ptr) {
 
 }
 
-void walkThroughRecursive(void* ptr) {
-	
-	void * blockHead = nearestBlockHead(ptr);
-	if (blockHead != (void * ) -1) {
-		if (is_marked(blockHead) == 0) {
-			mark(blockHead);
-			void* iteratorPtr = blockHead;
-			void* blockEnd = blockHead + chunk_size(blockHead);
-			while(iteratorPtr < blockEnd - 4) {
-				if (is_pointer(*(void**)iteratorPtr) != (void *) -1) {
-					walkThroughRecursive(*(void**)iteratorPtr);
-				}
-				(void*) iteratorPtr++;
-			}
-		}
-	}
-}
-
 // walk through memory specified by function arguments and mark
 // each chunk
 void walk_region_and_mark(void* start, void* end) {
   //fprintf(stderr, "walking %p - %p\n", start, end);
+  //fprintf(stderr, "mem_heap_lo(): %p\nmem_heap_hi(): %p\n", global_mem.start, global_mem.end);
   // TODO
-	void* blockPtr = start;
+	void* blockPtr = start;// + 4;
 	// Iterate through memory blocks
-	int i = 0;
+	//fprintf(stderr, "start %p mem_heap_lo() %p mem_heap_hi() %p, isHigher: %d, isLower: %d \n", start, mem_heap_lo(), mem_heap_hi(), start + 10 < mem_heap_hi(), start + 10 > mem_heap_lo());
 	while (blockPtr < end - 7) {
-		//fprintf(stderr, "i: %d\n",i);
 		if (is_pointer(*(void**)blockPtr) != (void*) -1) {
-			i++;
-			/*void* tempBlockPtr = blockPtr;
+			void* tempBlockPtr = blockPtr;
 			while(is_pointer(*(void**)tempBlockPtr) != (void*) -1) {
 				//fprintf("pointer: %p\n  mem_heap_lo(): %p\n  mem_heap_hi: %p\n", tempBlockPtr, mem_heap_lo(), mem_heap_hi());
 				void * blockHead = nearestBlockHead(*(void**)tempBlockPtr);
 				if (blockHead != (void * ) -1) {
+					//fprintf(stderr, "MARKING BLOCK HEAD\n");
 					mark(blockHead);
+				} else {
+					fprintf("blockPtr: %p", (void*)blockPtr);
 				}
 				tempBlockPtr = *(void**)tempBlockPtr;
-			}*/
-			//fprintf(stderr, "Here1");
-			walkThroughRecursive(*(void**)blockPtr);
-			//fprintf(stderr, "Here2");
+			}
 		}
 		blockPtr = (char*) blockPtr + 1;
 	}
@@ -181,7 +162,7 @@ void walk_region_and_mark(void* start, void* end) {
 }
 
 void* nearestBlockHead(void * ptr) {
-	//fprintf(stderr, "Ptr: %p  lo: %p, hi: %p", ptr, mem_heap_lo(), mem_heap_hi());
+	//fprintf(stderr, "Ptr: %p  lo: %p, hi: %p", ptr, mem_heap_lo(), mem);
 	if ((void*) mem_heap_lo() > (void*) ptr || (void*) ptr >= (void*) mem_heap_hi()){
 		//fprintf(stderr, "OUT OF BOUNDS BLOCK, ptr: %p hi: %p, lo: %p\n", ptr, mem_heap_hi(), mem_heap_lo());
 		return(void * ) -1;
